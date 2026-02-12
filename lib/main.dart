@@ -1,9 +1,12 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const FinanzasApp());
 }
+
+/* ================= APP ================= */
 
 class FinanzasApp extends StatelessWidget {
   const FinanzasApp({super.key});
@@ -13,11 +16,7 @@ class FinanzasApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      theme: ThemeData(colorSchemeSeed: Colors.green, useMaterial3: true),
-
-      darkTheme: ThemeData.dark(useMaterial3: true),
-
-      themeMode: ThemeMode.system,
+      theme: ThemeData(primarySwatch: Colors.green, useMaterial3: false),
 
       home: const MenuScreen(),
     );
@@ -32,59 +31,158 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 90,
-        centerTitle: true,
-        title: const Padding(
-          padding: EdgeInsets.only(top: 70),
-          child: Text(
-            "Calculadora Financiera",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      /* ===== APPBAR PERSONALIZADO ===== */
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(110),
+
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color.fromARGB(255, 189, 225, 190), const Color.fromARGB(255, 200, 230, 201)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 25),
+
+                child: Text(
+                  "Calculadora Financiera",
+
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      /* ===== BODY ===== */
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green.shade100, Colors.grey.shade400],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            cardBoton(
-              context,
-              "Préstamo Consumo",
-              Icons.attach_money,
-              const ConsumoScreen(),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
 
-            cardBoton(context, "Hipoteca", Icons.home, const HipotecaScreen()),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
 
-            cardBoton(
-              context,
-              "Inversión",
-              Icons.trending_up,
-              const InversionScreen(),
-            ),
-          ],
+            children: [
+              const Icon(Icons.account_balance, size: 90, color: Colors.green),
+
+              const SizedBox(height: 15),
+
+              const Text(
+                "Bienvenido",
+
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 30),
+
+              animatedButton(
+                context,
+                "Préstamo de Consumo",
+                Icons.payments,
+                const ConsumoScreen(),
+              ),
+
+              animatedButton(
+                context,
+                "Préstamo Hipotecario",
+                Icons.house,
+                const HipotecaScreen(),
+              ),
+
+              animatedButton(
+                context,
+                "Cálculo de Inversión",
+                Icons.trending_up,
+                const InversionScreen(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget cardBoton(BuildContext c, String texto, IconData icono, Widget page) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 12),
+  /* ===== BOTONES ANIMADOS ===== */
 
-      child: ListTile(
-        leading: Icon(icono, size: 35),
-        title: Text(texto, style: const TextStyle(fontSize: 18)),
-        trailing: const Icon(Icons.arrow_forward),
+  Widget animatedButton(
+    BuildContext context,
+    String text,
+    IconData icon,
+    Widget page,
+  ) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1, end: 1),
+      duration: const Duration(milliseconds: 200),
 
-        onTap: () {
-          Navigator.push(c, MaterialPageRoute(builder: (_) => page));
-        },
-      ),
+      builder: (context, scale, child) {
+        return GestureDetector(
+          onTapDown: (_) {
+            scale = 0.95;
+          },
+
+          onTapUp: (_) {
+            scale = 1;
+          },
+
+          onTapCancel: () {
+            scale = 1;
+          },
+
+          child: Transform.scale(
+            scale: scale,
+
+            child: Card(
+              elevation: 6,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+
+              child: ListTile(
+                leading: Icon(icon, color: Colors.green, size: 30),
+
+                title: Text(
+                  text,
+
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                trailing: const Icon(Icons.arrow_forward_ios),
+
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => page),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -115,11 +213,6 @@ class _ConsumoScreenState extends State<ConsumoScreen> {
     double P = double.parse(monto.text);
     double tasa = double.parse(interes.text) / 100;
     int years = int.parse(anos.text);
-
-    if (years < 1) {
-      mensaje("Mínimo 1 años");
-      return;
-    }
 
     int n;
     double r;
@@ -176,7 +269,7 @@ class _ConsumoScreenState extends State<ConsumoScreen> {
 
           const SizedBox(height: 20),
 
-          FilledButton.icon(
+          ElevatedButton.icon(
             onPressed: calcular,
             icon: const Icon(Icons.calculate),
             label: const Text("Calcular"),
@@ -186,8 +279,6 @@ class _ConsumoScreenState extends State<ConsumoScreen> {
 
           if (resultado > 0)
             Card(
-              elevation: 3,
-
               child: Padding(
                 padding: const EdgeInsets.all(20),
 
@@ -205,6 +296,7 @@ class _ConsumoScreenState extends State<ConsumoScreen> {
 
                     Text(
                       "\$${resultado.toStringAsFixed(2)}",
+
                       style: const TextStyle(
                         fontSize: 28,
                         color: Colors.green,
@@ -235,7 +327,7 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
   final interes = TextEditingController();
   final anos = TextEditingController();
 
-  String tipoPropiedad = "Casa";
+  String tipo = "Casa";
   double cuota = 0;
 
   void calcular() {
@@ -247,11 +339,6 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
     double P = double.parse(monto.text);
     double tasa = double.parse(interes.text) / 100;
     int years = int.parse(anos.text);
-
-    if (years < 5) {
-      mensaje("Mínimo 5 años");
-      return;
-    }
 
     int n = years * 12;
     double r = tasa / 12;
@@ -283,7 +370,7 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
           const SizedBox(height: 10),
 
           DropdownButtonFormField(
-            value: tipoPropiedad,
+            value: tipo,
 
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
@@ -296,12 +383,12 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
               "Terreno",
             ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
 
-            onChanged: (v) => setState(() => tipoPropiedad = v!),
+            onChanged: (v) => setState(() => tipo = v!),
           ),
 
           const SizedBox(height: 20),
 
-          FilledButton.icon(
+          ElevatedButton.icon(
             onPressed: calcular,
             icon: const Icon(Icons.calculate),
             label: const Text("Calcular"),
@@ -311,22 +398,18 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
 
           if (cuota > 0)
             Card(
-              elevation: 3,
-
               child: Padding(
                 padding: const EdgeInsets.all(20),
 
                 child: Column(
                   children: [
-                    Text(
-                      "Propiedad: $tipoPropiedad",
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    Text("Propiedad: $tipo"),
 
                     const SizedBox(height: 10),
 
                     Text(
                       "\$${cuota.toStringAsFixed(2)}",
+
                       style: const TextStyle(
                         fontSize: 26,
                         color: Colors.green,
@@ -391,13 +474,13 @@ class _InversionScreenState extends State<InversionScreen> {
         padding: const EdgeInsets.all(20),
 
         children: [
-          campo("Capital inicial", capital),
-          campo("Interés anual %", interes),
+          campo("Capital", capital),
+          campo("Interés %", interes),
           campo("Años", anos),
 
           const SizedBox(height: 20),
 
-          FilledButton.icon(
+          ElevatedButton.icon(
             onPressed: calcular,
             icon: const Icon(Icons.calculate),
             label: const Text("Calcular"),
@@ -407,8 +490,6 @@ class _InversionScreenState extends State<InversionScreen> {
 
           if (total > 0)
             Card(
-              elevation: 3,
-
               child: Padding(
                 padding: const EdgeInsets.all(20),
 
@@ -416,6 +497,7 @@ class _InversionScreenState extends State<InversionScreen> {
                   children: [
                     Text(
                       "Total: \$${total.toStringAsFixed(2)}",
+
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -426,6 +508,7 @@ class _InversionScreenState extends State<InversionScreen> {
 
                     Text(
                       "Ganancia: \$${ganancia.toStringAsFixed(2)}",
+
                       style: const TextStyle(fontSize: 18, color: Colors.green),
                     ),
                   ],
